@@ -7,7 +7,7 @@ export async function buildApp() {
   const fastify = Fastify({ logger: true })
 
   await fastify.register(cors, {
-    origin: process.env.NODE_ENV === 'development' ? true : ['https://girlyup.app'],
+    origin: true,
     credentials: true,
   })
 
