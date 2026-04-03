@@ -1,6 +1,18 @@
 import { create } from 'zustand'
 import { register, login } from '../services/auth.service'
 import type { RegisterPayload, LoginPayload } from '../services/auth.service'
+import { Platform } from 'react-native'
+import * as SecureStore from 'expo-secure-store'
+
+// Sur iOS/Android : SecureStore (Keychain/Keystore)
+// Sur web dev : localStorage (acceptable)
+const saveToken = async (token: string) => {
+  if (Platform.OS === 'web') {
+    localStorage.setItem('auth_token', token)
+  } else {
+    await SecureStore.setItemAsync('auth_token', token)
+  }
+}
 
 type User = {
   id: string; email: string; displayName: string; city?: string
@@ -21,13 +33,12 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   register: async (payload) => {
     set({ isLoading: true, error: null })
-    console.log('Tentative inscription:', payload)
+    // console.log('Tentative inscription:', { email: payload.email, displayName: payload.displayName })
     try {
       const { token, user } = await register(payload)
       localStorage.setItem('auth_token', token)
       set({ token, user, isLoading: false })
     } catch (err: any) {
-      console.log('Erreur:', err.message, err.response?.data)
       const message = err.response?.data?.error ?? "Erreur lors de l'inscription"
       set({ error: message, isLoading: false })
       throw err
